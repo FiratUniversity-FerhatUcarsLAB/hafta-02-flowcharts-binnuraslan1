@@ -1,0 +1,77 @@
+digraph ATM_Para_Cekme {
+    // Graph özellikleri
+    rankdir=TB;
+    node [shape=box, style=rounded, fontname="Arial"];
+    edge [fontname="Arial", fontsize=10];
+    
+    // Başlangıç ve bitiş
+    start [label="Başla", shape=ellipse, style=filled, fillcolor=lightgreen];
+    end [label="Bitir", shape=ellipse, style=filled, fillcolor=lightcoral];
+    
+    // Düğümler
+    kart_tak [label="Kart Takılır"];
+    pin_sor [label="PIN Sorulur"];
+    pin_kontrol [label="PIN Kontrolü", shape=diamond, style=filled, fillcolor=lightyellow];
+    hata_sayac [label="Hata Sayacı\nArtır"];
+    hata_kontrol [label="3 Hata\nOluştu mu?", shape=diamond, style=filled, fillcolor=lightyellow];
+    kart_bloke [label="Kart Bloke Edilir", style=filled, fillcolor=lightcoral];
+    bakiye_sorgula [label="Bakiye Sorgulanır"];
+    tutar_gir [label="Çekilecek Tutar\nGirilir"];
+    kat20_kontrol [label="20 TL'nin\nKatı mı?", shape=diamond, style=filled, fillcolor=lightyellow];
+    bakiye_kontrol [label="Bakiye\nYeterli mi?", shape=diamond, style=filled, fillcolor=lightyellow];
+    limit_kontrol [label="Günlük Limit\nAşıldı mı?", shape=diamond, style=filled, fillcolor=lightyellow];
+    para_ver [label="Para Verilir"];
+    fis_cikar [label="Fiş Çıkar"];
+    baska_islem [label="Başka İşlem?", shape=diamond, style=filled, fillcolor=lightyellow];
+    yetersiz_uyari [label="Yetersiz Bakiye\nUyarısı", style=filled, fillcolor=orange];
+    kat20_uyari [label="20 TL Katları\nUyarısı", style=filled, fillcolor=orange];
+    limit_uyari [label="Günlük Limit\nAşıldı Uyarısı", style=filled, fillcolor=orange];
+    
+    // Akış bağlantıları
+    start -> kart_tak;
+    kart_tak -> pin_sor;
+    pin_sor -> pin_kontrol;
+    
+    pin_kontrol -> bakiye_sorgula [label="Doğru"];
+    pin_kontrol -> hata_sayac [label="Yanlış"];
+    
+    hata_sayac -> hata_kontrol;
+    hata_kontrol -> pin_sor [label="Hayır\n(< 3)"];
+    hata_kontrol -> kart_bloke [label="Evet\n(= 3)"];
+    
+    kart_bloke -> end;
+    
+    bakiye_sorgula -> tutar_gir;
+    tutar_gir -> kat20_kontrol;
+    
+    kat20_kontrol -> bakiye_kontrol [label="Evet"];
+    kat20_kontrol -> kat20_uyari [label="Hayır"];
+    kat20_uyari -> tutar_gir;
+    
+    bakiye_kontrol -> limit_kontrol [label="Evet"];
+    bakiye_kontrol -> yetersiz_uyari [label="Hayır"];
+    yetersiz_uyari -> tutar_gir;
+    
+    limit_kontrol -> para_ver [label="Hayır"];
+    limit_kontrol -> limit_uyari [label="Evet"];
+    limit_uyari -> tutar_gir;
+    
+    para_ver -> fis_cikar;
+    fis_cikar -> baska_islem;
+    
+    baska_islem -> bakiye_sorgula [label="Evet"];
+    baska_islem -> end [label="Hayır"];
+    
+    // Notlar
+    note1 [label="Not: 3 hatalı PIN girişinde\nkart otomatik bloke edilir", 
+           shape=note, style=filled, fillcolor=lightyellow];
+    note2 [label="Not: Tutar 20 TL'nin\nkatı olmalıdır", 
+           shape=note, style=filled, fillcolor=lightyellow];
+    note3 [label="Not: Günlük çekim\nlimiti kontrol edilir", 
+           shape=note, style=filled, fillcolor=lightyellow];
+    
+    // Not bağlantıları (görünmez)
+    {rank=same; hata_kontrol; note1}
+    {rank=same; kat20_kontrol; note2}
+    {rank=same; limit_kontrol; note3}
+}
