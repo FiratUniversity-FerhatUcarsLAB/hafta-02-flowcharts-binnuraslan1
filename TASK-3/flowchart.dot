@@ -55,3 +55,50 @@ digraph HastaneSistemi {
     tahlil_goster -> tahlil_indir;
     tahlil_indir -> end;
 }
+
+digraph TahlilModulu {
+    rankdir=TB;
+    node [shape=box, style=rounded];
+    
+    start [label="Başla", shape=ellipse, style=filled, fillcolor=lightgreen];
+    kimlik [label="Kimlik Doğrulama\n(TC No)"];
+    tahlil_sorgula [label="Tahlil Kayıtlarını\nSorgula"];
+    
+    // Koşul 1: Tahlil Var mı?
+    tahlil_varmi [label="Tahlil Kaydı\nVar mı?", shape=diamond, style=filled, fillcolor=lightyellow];
+    tahlil_yok_mesaj [label="Mesaj: Sistemde\nTahlil Kaydı Yok", style=filled, fillcolor=lightcoral];
+    
+    // Koşul 2: Sonuç Hazır mı?
+    sonuc_hazir [label="Sonuç\nHazır mı?", shape=diamond, style=filled, fillcolor=lightyellow];
+    bekleme_mesaji [label="Mesaj: Tahlil Sonucu\nHenüz Hazır Değil\nLütfen Bekleyiniz", style=filled, fillcolor=orange];
+    
+    // Sonuç Görüntüleme
+    sonuc_goster [label="Tahlil Sonuçlarını\nEkranda Görüntüle", style=filled, fillcolor=lightblue];
+    pdf_sor [label="PDF İndirmek\nİster misiniz?", shape=diamond, style=filled, fillcolor=lightyellow];
+    pdf_indir [label="Sonuçları PDF\nOlarak İndir", style=filled, fillcolor=lightgreen];
+    pdf_indirme_yok [label="Sadece Ekranda Görüntüle"];
+    
+    end [label="Bitir", shape=ellipse, style=filled, fillcolor=lightcoral];
+    
+    // Akış
+    start -> kimlik;
+    kimlik -> tahlil_sorgula;
+    tahlil_sorgula -> tahlil_varmi;
+    
+    // Koşul 1: Tahlil Kontrolü
+    tahlil_varmi -> sonuc_hazir [label="Evet"];
+    tahlil_varmi -> tahlil_yok_mesaj [label="Hayır"];
+    tahlil_yok_mesaj -> end;
+    
+    // Koşul 2: Sonuç Hazır mı Kontrolü
+    sonuc_hazir -> sonuc_goster [label="Evet\n(Onaylandı)"];
+    sonuc_hazir -> bekleme_mesaji [label="Hayır\n(İşlemde)"];
+    bekleme_mesaji -> end;
+    
+    // Sonuç Görüntüleme ve PDF İndirme
+    sonuc_goster -> pdf_sor;
+    pdf_sor -> pdf_indir [label="Evet"];
+    pdf_sor -> pdf_indirme_yok [label="Hayır"];
+    pdf_indir -> end;
+    pdf_indirme_yok -> end;
+}
