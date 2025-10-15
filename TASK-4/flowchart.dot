@@ -1,0 +1,109 @@
+digraph OgrenciDersKayitSistemi {
+    rankdir=TB;
+    node [shape=box, style=rounded];
+    
+    start [label="Başla", shape=ellipse, style=filled, fillcolor=lightgreen];
+    giris [label="Öğrenci Girişi\n(Öğrenci No + Şifre)"];
+    giris_kontrol [label="Giriş Başarılı?", shape=diamond];
+    
+    // Ders Listesi Döngüsü
+    ders_listesi [label="Ders Listesini Görüntüle\n(Döngü - Tüm Dersler)", style=filled, fillcolor=lightblue];
+    ders_sec [label="Ders Seçimi Yap"];
+    
+    // Kontenjan Kontrolü
+    kontenjan_kontrol [label="Kontenjan\nDolu mu?", shape=diamond, style=filled, fillcolor=lightyellow];
+    kontenjan_hata [label="Hata: Kontenjan Dolu", style=filled, fillcolor=lightcoral];
+    
+    // Ön Koşul Kontrolü
+    onkosul_kontrol [label="Ön Koşul Dersi\nAlınmış mı?", shape=diamond, style=filled, fillcolor=lightyellow];
+    onkosul_hata [label="Hata: Ön Koşul\nKarşılanmamış", style=filled, fillcolor=lightcoral];
+    
+    // Zaman Çakışması Kontrolü
+    zaman_kontrol [label="Zaman Çakışması\nVar mı?", shape=diamond, style=filled, fillcolor=lightyellow];
+    zaman_hata [label="Hata: Zaman Çakışması", style=filled, fillcolor=lightcoral];
+    
+    // Kredi Limiti Kontrolü
+    kredi_hesapla [label="Toplam Krediyi Hesapla"];
+    kredi_kontrol [label="Toplam Kredi\n≤ 35 mi?", shape=diamond, style=filled, fillcolor=lightyellow];
+    kredi_hata [label="Hata: Kredi Limiti Aşıldı\n(Max 35)", style=filled, fillcolor=lightcoral];
+    
+    // Ders Ekleme
+    ders_ekle [label="Dersi Seçili Derslere Ekle", style=filled, fillcolor=lightgreen];
+    
+    // Ders Ekleme/Çıkarma Döngüsü
+    devam_sor [label="Başka Ders\nEklemek/Çıkarmak\nİstiyor musunuz?", shape=diamond, style=filled, fillcolor=lightyellow];
+    ders_cikar [label="Ders Çıkarma İşlemi\n(Döngü)", style=filled, fillcolor=orange];
+    
+    // GPA Kontrolü ve Danışman Onayı
+    gpa_kontrol [label="GPA < 2.5 mi?", shape=diamond, style=filled, fillcolor=lightyellow];
+    danisman_onay [label="Danışman Onayı\nGerekli!", style=filled, fillcolor=orange];
+    danisman_onay_bekle [label="Danışman Onayı\nBekleniyor...", style=filled, fillcolor=yellow];
+    danisman_onayla [label="Danışman\nOnayladı mı?", shape=diamond, style=filled, fillcolor=lightyellow];
+    onay_red [label="Kayıt Reddedildi", style=filled, fillcolor=lightcoral];
+    
+    // Kayıt Özeti
+    kayit_ozet [label="Kayıt Özeti Göster:\n- Seçili Dersler\n- Toplam Kredi\n- Ders Programı", style=filled, fillcolor=lightblue];
+    son_onay [label="Kaydı\nOnaylıyor musunuz?", shape=diamond, style=filled, fillcolor=lightyellow];
+    kayit_tamamla [label="Ders Kaydı Tamamlandı\nBaşarılı!", style=filled, fillcolor=lightgreen];
+    kayit_iptal [label="Kayıt İptal Edildi"];
+    
+    end [label="Bitir", shape=ellipse, style=filled, fillcolor=lightcoral];
+    giris_hata [label="Hata: Giriş Başarısız", style=filled, fillcolor=lightcoral];
+    
+    // Ana Akış
+    start -> giris;
+    giris -> giris_kontrol;
+    giris_kontrol -> ders_listesi [label="Evet"];
+    giris_kontrol -> giris_hata [label="Hayır"];
+    giris_hata -> giris [label="Tekrar Dene"];
+    
+    // Ders Seçimi ve Kontroller
+    ders_listesi -> ders_sec;
+    ders_sec -> kontenjan_kontrol;
+    
+    // Kontenjan Kontrolü
+    kontenjan_kontrol -> onkosul_kontrol [label="Hayır\n(Yer Var)"];
+    kontenjan_kontrol -> kontenjan_hata [label="Evet"];
+    kontenjan_hata -> devam_sor;
+    
+    // Ön Koşul Kontrolü
+    onkosul_kontrol -> zaman_kontrol [label="Evet\n(Alınmış)"];
+    onkosul_kontrol -> onkosul_hata [label="Hayır"];
+    onkosul_hata -> devam_sor;
+    
+    // Zaman Çakışması Kontrolü
+    zaman_kontrol -> kredi_hesapla [label="Hayır\n(Çakışma Yok)"];
+    zaman_kontrol -> zaman_hata [label="Evet"];
+    zaman_hata -> devam_sor;
+    
+    // Kredi Limiti Kontrolü
+    kredi_hesapla -> kredi_kontrol;
+    kredi_kontrol -> ders_ekle [label="Evet\n(≤35)"];
+    kredi_kontrol -> kredi_hata [label="Hayır\n(>35)"];
+    kredi_hata -> devam_sor;
+    
+    // Ders Ekleme Sonrası
+    ders_ekle -> devam_sor;
+    
+    // Döngü: Başka Ders İşlemi
+    devam_sor -> ders_listesi [label="Evet (Ders Ekle)", style=dashed];
+    devam_sor -> ders_cikar [label="Ders Çıkar", style=dashed];
+    devam_sor -> gpa_kontrol [label="Hayır (Bitir)"];
+    ders_cikar -> devam_sor [label="Döngü", style=dashed];
+    
+    // GPA ve Danışman Onayı Kontrolü
+    gpa_kontrol -> danisman_onay [label="Evet\n(GPA<2.5)"];
+    gpa_kontrol -> kayit_ozet [label="Hayır\n(GPA≥2.5)"];
+    danisman_onay -> danisman_onay_bekle;
+    danisman_onay_bekle -> danisman_onayla;
+    danisman_onayla -> kayit_ozet [label="Evet"];
+    danisman_onayla -> onay_red [label="Hayır"];
+    onay_red -> end;
+    
+    // Kayıt Özeti ve Son Onay
+    kayit_ozet -> son_onay;
+    son_onay -> kayit_tamamla [label="Evet"];
+    son_onay -> kayit_iptal [label="Hayır"];
+    kayit_tamamla -> end;
+    kayit_iptal -> end;
+}
