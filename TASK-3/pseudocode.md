@@ -1,0 +1,250 @@
+BAŞLA
+
+    // Kimlik Doğrulama
+    YAZDIR "Hastane Randevu Sistemine Hoş Geldiniz"
+    YAZDIR "TC Kimlik Numaranızı Girin:"
+    OKU tc_no
+    YAZDIR "Şifrenizi Girin:"
+    OKU sifre
+    
+    EĞER (KimlikDogrula(tc_no, sifre) == DOĞRU) İSE
+        YAZDIR "Giriş Başarılı"
+    DEĞİLSE
+        YAZDIR "Hata: Kimlik doğrulanamadı!"
+        GİT BAŞLA
+    EĞER_SONU
+    
+    // Poliklinik Seçimi
+    YAZDIR "Poliklinik Listesi:"
+    YAZDIR "1. Dahiliye"
+    YAZDIR "2. Kardiyoloji"
+    YAZDIR "3. Ortopedi"
+    YAZDIR "4. Göz Hastalıkları"
+    YAZDIR "5. Çocuk Sağlığı"
+    YAZDIR "Poliklinik seçiniz (1-5):"
+    OKU poliklinik_secimi
+    
+    // Doktor Listesi Görüntüleme
+    doktor_listesi = PoliklinikDoktorlariGetir(poliklinik_secimi)
+    
+    YAZDIR "Doktor Listesi:"
+    i = 1 İÇİN i <= doktor_listesi.uzunluk KADAR i++
+        YAZDIR i + ". " + doktor_listesi[i].ad + " - " + doktor_listesi[i].uzmanlik
+    DÖNGÜ_SONU
+    
+    YAZDIR "Doktor seçiniz:"
+    OKU doktor_secimi
+    secili_doktor = doktor_listesi[doktor_secimi]
+    
+    // Uygun Saatleri Gösterme
+    uygun_saatler = DoktorUygunSaatler(secili_doktor.id)
+    
+    YAZDIR "Uygun Randevu Saatleri:"
+    j = 1 İÇİN j <= uygun_saatler.uzunluk KADAR j++
+        YAZDIR j + ". " + uygun_saatler[j].tarih + " - " + uygun_saatler[j].saat
+    DÖNGÜ_SONU
+    
+    YAZDIR "Randevu saati seçiniz:"
+    OKU saat_secimi
+    secili_randevu = uygun_saatler[saat_secimi]
+    
+    // Randevu Onaylama
+    YAZDIR "Randevu Özeti:"
+    YAZDIR "Poliklinik: " + poliklinik_secimi
+    YAZDIR "Doktor: " + secili_doktor.ad
+    YAZDIR "Tarih: " + secili_randevu.tarih
+    YAZDIR "Saat: " + secili_randevu.saat
+    YAZDIR "Onaylıyor musunuz? (E/H):"
+    OKU onay
+    
+    EĞER (onay == "E" VEYA onay == "e") İSE
+        randevu_id = RandevuKaydet(tc_no, secili_doktor.id, secili_randevu)
+        
+        EĞER (randevu_id != NULL) İSE
+            YAZDIR "Randevu başarıyla oluşturuldu!"
+            YAZDIR "Randevu No: " + randevu_id
+            
+            // SMS Gönderme
+            sms_mesaj = "Randevunuz oluşturuldu. Doktor: " + secili_doktor.ad + 
+                       " Tarih: " + secili_randevu.tarih + " Saat: " + secili_randevu.saat
+            
+            SmsGonder(tc_no, sms_mesaj)
+            YAZDIR "Onay SMS'i gönderildi."
+        DEĞİLSE
+            YAZDIR "Hata: Randevu kaydedilemedi!"
+        EĞER_SONU
+    DEĞİLSE
+        YAZDIR "Randevu iptal edildi."
+    EĞER_SONU
+    
+    YAZDIR "Teşekkür ederiz. İyi günler dileriz."
+
+BİTİR
+
+
+// Fonksiyon Tanımları
+FONKSİYON KimlikDogrula(tc, sifre)
+    // Veritabanında TC ve şifre kontrolü
+    DÖNÜT (tc VE sifre veritabanında eşleşiyor mu?)
+FONKSİYON_SONU
+
+FONKSİYON PoliklinikDoktorlariGetir(poliklinik_id)
+    // İlgili polikliniğe ait doktorları getir
+    DÖNÜT doktor_listesi
+FONKSİYON_SONU
+
+FONKSİYON DoktorUygunSaatler(doktor_id)
+    // Doktorun müsait randevu saatlerini getir
+    DÖNÜT uygun_saatler_listesi
+FONKSİYON_SONU
+
+FONKSİYON RandevuKaydet(tc, doktor_id, randevu_bilgisi)
+    // Randevuyu veritabanına kaydet
+    DÖNÜT randevu_id
+FONKSİYON_SONU
+
+FONKSİYON SmsGonder(tc, mesaj)
+    // Hastanın telefon numarasına SMS gönder
+    SMS_Servisi.Gonder(tc, mesaj)
+FONKSİYON_SONU
+
+BAŞLA
+
+    // Kimlik Doğrulama
+    YAZDIR "Tahlil Sonucu Görüntüleme Sistemine Hoş Geldiniz"
+    YAZDIR "TC Kimlik Numaranızı Girin:"
+    OKU tc_no
+    YAZDIR "Şifrenizi Girin:"
+    OKU sifre
+    
+    EĞER (KimlikDogrula(tc_no, sifre) == DOĞRU) İSE
+        YAZDIR "Giriş Başarılı"
+    DEĞİLSE
+        YAZDIR "Hata: Kimlik doğrulanamadı!"
+        GİT BAŞLA
+    EĞER_SONU
+    
+    // Tahlil Varlığı Kontrolü
+    YAZDIR "Tahlil kayıtları sorgulanıyor..."
+    tahlil_listesi = TahlilKayitlariGetir(tc_no)
+    
+    EĞER (tahlil_listesi == BOŞ VEYA tahlil_listesi.uzunluk == 0) İSE
+        YAZDIR "Sistemde tahlil kaydınız bulunmamaktadır."
+        YAZDIR "Lütfen hastane ile iletişime geçiniz."
+        GİT BİTİR
+    DEĞİLSE
+        YAZDIR "Tahlil kayıtları bulundu."
+        YAZDIR "Toplam " + tahlil_listesi.uzunluk + " adet tahlil kaydı var."
+    EĞER_SONU
+    
+    // Tahlil Listesini Göster
+    YAZDIR "Tahlil Listesi:"
+    i = 1 İÇİN i <= tahlil_listesi.uzunluk KADAR i++
+        YAZDIR i + ". " + tahlil_listesi[i].tarih + " - " + 
+               tahlil_listesi[i].tur + " - Durum: " + tahlil_listesi[i].durum
+    DÖNGÜ_SONU
+    
+    YAZDIR "Görüntülemek istediğiniz tahlili seçiniz:"
+    OKU tahlil_secimi
+    secili_tahlil = tahlil_listesi[tahlil_secimi]
+    
+    // Sonuç Hazır mı Kontrolü
+    YAZDIR "Tahlil durumu kontrol ediliyor..."
+    
+    EĞER (secili_tahlil.durum == "HAZIR" VEYA secili_tahlil.durum == "ONAYLANDI") İSE
+        YAZDIR "Tahlil sonucu hazır!"
+        
+        // Sonuç Görüntüleme
+        tahlil_detay = TahlilDetayGetir(secili_tahlil.id)
+        
+        YAZDIR "=========================="
+        YAZDIR "TAHLİL SONUCU"
+        YAZDIR "=========================="
+        YAZDIR "Tahlil Türü: " + tahlil_detay.tur
+        YAZDIR "Tahlil Tarihi: " + tahlil_detay.tarih
+        YAZDIR "Sonuç Tarihi: " + tahlil_detay.sonuc_tarihi
+        YAZDIR "Doktor: " + tahlil_detay.doktor_adi
+        YAZDIR "=========================="
+        
+        YAZDIR "TEST SONUÇLARI:"
+        j = 1 İÇİN j <= tahlil_detay.testler.uzunluk KADAR j++
+            YAZDIR tahlil_detay.testler[j].ad + ": " + 
+                   tahlil_detay.testler[j].deger + " " + 
+                   tahlil_detay.testler[j].birim + 
+                   " (Normal: " + tahlil_detay.testler[j].normal_aralik + ")"
+        DÖNGÜ_SONU
+        
+        YAZDIR "=========================="
+        YAZDIR "Yorumlar: " + tahlil_detay.yorumlar
+        YAZDIR "=========================="
+        
+        // PDF İndirme Seçeneği
+        YAZDIR "Sonuçları PDF olarak indirmek ister misiniz? (E/H):"
+        OKU pdf_secim
+        
+        EĞER (pdf_secim == "E" VEYA pdf_secim == "e") İSE
+            YAZDIR "PDF oluşturuluyor..."
+            pdf_dosya = PdfOlustur(tahlil_detay)
+            
+            EĞER (pdf_dosya != NULL) İSE
+                PdfIndir(pdf_dosya, "Tahlil_" + tc_no + "_" + secili_tahlil.id + ".pdf")
+                YAZDIR "PDF başarıyla indirildi!"
+                YAZDIR "Dosya adı: Tahlil_" + tc_no + "_" + secili_tahlil.id + ".pdf"
+            DEĞİLSE
+                YAZDIR "Hata: PDF oluşturulamadı!"
+            EĞER_SONU
+        DEĞİLSE
+            YAZDIR "PDF indirme işlemi iptal edildi."
+        EĞER_SONU
+        
+    DEĞİLSE EĞER (secili_tahlil.durum == "İŞLEMDE" VEYA secili_tahlil.durum == "BEKLİYOR") İSE
+        // Bekleme Mesajı
+        YAZDIR "=========================="
+        YAZDIR "BEKLEYİNİZ"
+        YAZDIR "=========================="
+        YAZDIR "Tahlil sonucunuz henüz hazır değil."
+        YAZDIR "Tahlil Durumu: " + secili_tahlil.durum
+        YAZDIR "Tahlil Tarihi: " + secili_tahlil.tarih
+        YAZDIR "Tahmini Sonuç Tarihi: " + secili_tahlil.tahmini_sure
+        YAZDIR "=========================="
+        YAZDIR "Lütfen daha sonra tekrar kontrol ediniz."
+        YAZDIR "Sonuç hazır olduğunda SMS ile bilgilendirileceksiniz."
+        
+    DEĞİLSE
+        YAZDIR "Hata: Tahlil durumu belirlenemedi."
+        YAZDIR "Lütfen hastane ile iletişime geçiniz."
+    EĞER_SONU
+    
+    YAZDIR "Teşekkür ederiz. İyi günler dileriz."
+
+BİTİR
+
+
+// Fonksiyon Tanımları
+FONKSİYON KimlikDogrula(tc, sifre)
+    // Veritabanında TC ve şifre kontrolü
+    DÖNÜT (tc VE sifre veritabanında eşleşiyor mu?)
+FONKSİYON_SONU
+
+FONKSİYON TahlilKayitlariGetir(tc)
+    // Hastaya ait tüm tahlil kayıtlarını getir
+    DÖNÜT tahlil_listesi
+FONKSİYON_SONU
+
+FONKSİYON TahlilDetayGetir(tahlil_id)
+    // Seçili tahlile ait detaylı sonuçları getir
+    DÖNÜT tahlil_detay
+FONKSİYON_SONU
+
+FONKSİYON PdfOlustur(tahlil_detay)
+    // Tahlil sonuçlarından PDF dosyası oluştur
+    pdf = YeniPDF()
+    pdf.BaslikEkle("TAHLİL SONUCU")
+    pdf.IcerikEkle(tahlil_detay)
+    DÖNÜT pdf
+FONKSİYON_SONU
+
+FONKSİYON PdfIndir(pdf_dosya, dosya_adi)
+    // PDF dosyasını kullanıcının cihazına indir
+    Indir(pdf_dosya, dosya_adi)
+FONKSİYON_SONU
