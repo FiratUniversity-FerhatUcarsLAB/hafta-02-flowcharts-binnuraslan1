@@ -1,0 +1,57 @@
+digraph HastaneSistemi {
+    rankdir=TB;
+    node [shape=box, style=rounded];
+    
+    start [label="Başla", shape=ellipse, style=filled, fillcolor=lightgreen];
+    kimlik [label="Kimlik Doğrulama\n(TC No + Şifre)"];
+    dogrulama_kontrol [label="Kimlik Doğru?", shape=diamond];
+    islem_secimi [label="İşlem Seçimi\n1-Randevu Al\n2-Tahlil Sonucu Gör", shape=diamond];
+    
+    // Randevu Modülü
+    poliklinik [label="Poliklinik Seçimi"];
+    doktor_listesi [label="Doktor Listesi\nGörüntüleme"];
+    uygun_saatler [label="Uygun Saatleri\nGöster (Döngü)"];
+    randevu_uygun [label="Uygun Randevu\nVar mı?", shape=diamond];
+    saat_sec [label="Tarih ve Saat Seç"];
+    randevu_onayla [label="Randevu Onaylama"];
+    sms_randevu [label="SMS Gönder\n(Randevu Onayı)"];
+    
+    // Tahlil Modülü
+    tahlil_sorgula [label="Tahlil Sonuçlarını\nSorgula"];
+    tahlil_varmi [label="Sonuç Hazır mı?", shape=diamond];
+    tahlil_goster [label="Tahlil Sonuçlarını\nGörüntüle"];
+    tahlil_indir [label="PDF İndir/Yazdır"];
+    
+    end [label="Bitir", shape=ellipse, style=filled, fillcolor=lightcoral];
+    hata_kimlik [label="Hata: Kimlik\nDoğrulanamadı", style=filled, fillcolor=lightyellow];
+    hata_tahlil [label="Sonuç Henüz\nHazır Değil", style=filled, fillcolor=lightyellow];
+    
+    // Ana Akış
+    start -> kimlik;
+    kimlik -> dogrulama_kontrol;
+    dogrulama_kontrol -> islem_secimi [label="Evet"];
+    dogrulama_kontrol -> hata_kimlik [label="Hayır"];
+    hata_kimlik -> kimlik [label="Tekrar Dene"];
+    
+    // Koşul: İşlem Seçimi
+    islem_secimi -> poliklinik [label="1-Randevu Al"];
+    islem_secimi -> tahlil_sorgula [label="2-Tahlil Sonucu"];
+    
+    // Randevu Akışı (Döngülü)
+    poliklinik -> doktor_listesi;
+    doktor_listesi -> uygun_saatler;
+    uygun_saatler -> randevu_uygun;
+    randevu_uygun -> saat_sec [label="Evet"];
+    randevu_uygun -> poliklinik [label="Hayır\n(Başka Doktor Seç)", style=dashed];
+    saat_sec -> randevu_onayla;
+    randevu_onayla -> sms_randevu;
+    sms_randevu -> end;
+    
+    // Tahlil Akışı
+    tahlil_sorgula -> tahlil_varmi;
+    tahlil_varmi -> tahlil_goster [label="Evet"];
+    tahlil_varmi -> hata_tahlil [label="Hayır"];
+    hata_tahlil -> end;
+    tahlil_goster -> tahlil_indir;
+    tahlil_indir -> end;
+}
