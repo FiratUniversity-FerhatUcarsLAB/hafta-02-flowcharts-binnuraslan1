@@ -1,0 +1,34 @@
+digraph SmartHomeSecurity {
+    rankdir=TB;
+    node [shape=box, style=rounded, fontname="Arial"];
+
+    Start [label="Sistem Aktif mi?", shape=diamond];
+    SensorLoop [label="Sensörleri Sürekli Oku"];
+    MotionCheck [label="Hareket Var mı?", shape=diamond];
+    DoorCheck [label="Kapı/Pencere Açık mı?", shape=diamond];
+    FalseAlarm [label="Ev Sahibi Evde mi?", shape=diamond];
+    AlarmLevel [label="Alarm Seviyesi Belirle\n(1-2-3)", shape=diamond];
+    SendNotification [label="Bildirim Gönder\n(SMS + App + Email)"];
+    ResetOrContinue [label="Alarm Sıfırlansın mı?", shape=diamond];
+    WaitAndRepeat [label="Bekle ve Tekrar Kontrol Et"];
+
+    // Akış
+    Start -> SensorLoop [label="Evet"];
+    Start -> WaitAndRepeat [label="Hayır"];
+
+    SensorLoop -> MotionCheck;
+    MotionCheck -> DoorCheck [label="Hayır"];
+    MotionCheck -> FalseAlarm [label="Evet"];
+
+    DoorCheck -> WaitAndRepeat [label="Hayır"];
+    DoorCheck -> FalseAlarm [label="Evet"];
+
+    FalseAlarm -> WaitAndRepeat [label="Evde"];
+    FalseAlarm -> AlarmLevel [label="Yok"];
+
+    AlarmLevel -> SendNotification;
+    SendNotification -> ResetOrContinue;
+    ResetOrContinue -> WaitAndRepeat;
+
+    WaitAndRepeat -> SensorLoop;
+}
